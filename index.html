@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endless Bug Hunt</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        /* Use a dark, dev-friendly theme */
+        body {
+            background-color: #1a202c; /* gray-900 */
+            color: #e2e8f0; /* gray-200 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Style for the code editor textarea */
+        #user-solution-editor {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            background-color: #2d3748; /* gray-800 */
+            color: #e2e8f0; /* gray-200 */
+            border: 2px solid #4a5568; /* gray-600 */
+            border-radius: 8px;
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            resize: vertical;
+            outline: none;
+        }
+        #user-solution-editor:focus {
+            border-color: #4299e1; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+
+        /* Make highlight.js code blocks match the textarea */
+        pre code.hljs {
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Feedback animations */
+        @keyframes flash-green {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(74, 222, 128, 0.2); } /* green-400 with opacity */
+        }
+        @keyframes flash-red {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(248, 113, 113, 0.2); } /* red-400 with opacity */
+        }
+        .flash-correct {
+            animation: flash-green 0.5s ease-in-out;
+        }
+        .flash-incorrect {
+            animation: flash-red 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-full flex items-center justify-center p-4">
+
+    <main class="w-full max-w-2xl bg-gray-800 shadow-2xl rounded-2xl p-6 md:p-10 border-t-4 border-blue-500">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-extrabold text-white">Endless Bug Hunt 🐞</h1>
+            <div class="text-lg text-blue-400 font-bold">
+                Bugs Squashed: <span id="score-display">0</span>
+            </div>
+        </div>
+
+        <!-- Puzzle Area -->
+        <div id="puzzle-container">
+            <!-- Language and Instructions -->
+            <div class="mb-4">
+                <span id="language-tag" class="text-sm font-bold uppercase px-3 py-1 bg-blue-600 text-white rounded-full">JavaScript</span>
+                <p id="instructions" class="text-lg text-gray-300 mt-3">This function should return the sum of 'a' and 'b'.</p>
+            </div>
+
+            <!-- Broken Code -->
+            <div class="mb-4">
+                <h3 class="font-bold text-gray-400 mb-2">Broken Code:</h3>
+                <pre><code id="broken-code-block" class="language-javascript">function add(a, b) {
+    return a - b;
+}</code></pre>
+            </div>
+
+            <!-- User Solution Editor -->
+            <div class="mb-4">
+                <h3 class="font-bold text-gray-400 mb-2">Your Fix:</h3>
+                <textarea id="user-solution-editor" spellcheck="false" placeholder="Write your corrected code here..."></textarea>
+            </div>
+
+            <!-- Submit Button and Feedback -->
+            <div class="flex flex-col items-center">
+                <button id="submit-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200">
+                    Submit Fix
+                </button>
+                <p id="feedback-text" class="text-center text-lg font-bold h-6 mt-4"></p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- window.onload Wrapper ---
+        // This is the most reliable fix. It ensures all HTML, CSS,
+        // and libraries (like highlight.js) are fully loaded
+        // before we try to run any game code. This prevents
+        // the "button not working" bug on live servers.
+        window.onload = () => {
+
+            // --- The "Never-Ending" Puzzle Bank ---
+            const puzzleBank = [
+                // --- JavaScript Puzzles (Runnable) ---
+                {
+                    language: 'javascript',
+                    instructions: 'This function should return the sum of "a" and "b".',
+                    brokenCode: 'function add(a, b) {\n  return a - b;\n}',
+                    type: 'run',
+                    validator: (userCode) => {
+                        try {
+                            // Create the function and test it
+                            const fn = new Function(userCode + '; return add(2, 3);');
+                            return fn() === 5;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+                },
+                {
+                    language: 'javascript',
+                    instructions: 'This function should return 10.',
+                    brokenCode: 'function getValue() {\n  return 5;\n}',
+                    type: 'run',
+                    validator: (userCode) => {
+                        try {
+                            const fn = new Function(userCode + '; return getValue();');
+                            return fn() === 10;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+                },
+                
+                // --- Python Puzzles (String Match) ---
+                {
+                    language: 'python',
+                    instructions: 'Fix the syntax for this Python 3 print statement.',
+                    brokenCode: 'print "Hello, World!"',
+                    type: 'match',
+                    solution: 'print("Hello, World!")'
+                },
+                {
+                    language: 'python',
+                    instructions: 'Fix this function definition. It\'s missing a colon.',
+                    brokenCode: 'def my_function()\n  pass',
+                    type: 'match',
+                    solution: 'def my_function():\n  pass'
+                },
+
+                // --- HTML Puzzles (String Match) ---
+                {
+                    language: 'html',
+                    instructions: 'Fix this image tag. The attribute for the source is wrong.',
+                    brokenCode: '<img href="image.jpg">',
+                    type: 'match',
+                    solution: '<img src="image.jpg">'
+                },
+                {
+                    language: 'html',
+                    instructions: 'This link should open in a new tab. Add the correct attribute.',
+                    brokenCode: '<a href="https://google.com">Google</a>',
+                    type: 'match',
+                    solution: '<a href="https://google.com" target="_blank">Google</a>'
+                },
+
+                // --- CSS Puzzles (String Match) ---
+                {
+                    language: 'css',
+                    instructions: 'Fix this CSS property. "background_color" is not valid.',
+                    brokenCode: 'body {\n  background_color: blue;\n}',
+                    type: 'match',
+                    solution: 'body {\n  background-color: blue;\n}'
+                },
+                {
+                    language: 'css',
+                    instructions: 'Fix this selector. It should target an ID, not a class.',
+                    brokenCode: '.header {\n  font-size: 24px;\n}',
+                    type: 'match',
+                    solution: '#header {\n  font-size: 24px;\n}'
+                },
+                
+                // --- Java Puzzles (String Match) ---
+                {
+                    language: 'java',
+                    instructions: 'Fix this Java variable declaration. "string" should be "String".',
+                    brokenCode: 'string myName = "Codey";',
+                    type: 'match',
+                    solution: 'String myName = "Codey";'
+                },
+                {
+                    language: 'java',
+                    instructions: 'This line is missing a semicolon at the end.',
+                    brokenCode: 'System.out.println("Hello")' ,
+                    type: 'match',
+                    solution: 'System.out.println("Hello");'
+                },
+
+                // --- C++ Puzzles (String Match) ---
+                {
+                    language: 'cpp',
+                    instructions: 'Fix this C++ output statement. It\'s missing a semicolon.',
+                    brokenCode: '#include <iostream>\n\nint main() {\n  std::cout << "Hello!"\n  return 0;\n}',
+                    type: 'match',
+                    solution: '#include <iostream>\n\nint main() {\n  std::cout << "Hello!";\n  return 0;\n}'
+                },
+                 {
+                    language: 'c',
+                    instructions: 'Fix this C print statement. It\'s missing a semicolon.',
+                    brokenCode: '#include <stdio.h>\n\nint main() {\n  printf("Hello, World!")\n  return 0;\n}',
+                    type: 'match',
+                    solution: '#include <stdio.h>\n\nint main() {\n  printf("Hello, World!");\n  return 0;\n}'
+                },
+
+                // --- TypeScript Puzzles (String Match) ---
+                {
+                    language: 'typescript',
+                    instructions: 'This variable is assigned the wrong type. Fix the value.',
+                    brokenCode: 'let name: string = 123;',
+                    type: 'match',
+                    solution: 'let name: string = "123";'
+                },
+                {
+                    language: 'typescript',
+                    instructions: 'Fix this function\'s return type. It should return a number.',
+                    brokenCode: 'function getAge(): string {\n  return 42;\n}',
+                    type: 'match',
+                    solution: 'function getAge(): number {\n  return 42;\n}'
+                },
+            ];
+
+            // --- Game State ---
+            let score = 0;
+            let currentPuzzle = null;
+            let isChecking = false;
+
+            // --- DOM Elements ---
+            const scoreDisplay = document.getElementById('score-display');
+            const languageTag = document.getElementById('language-tag');
+            const instructions = document.getElementById('instructions');
+            const brokenCodeBlock = document.getElementById('broken-code-block');
+            const userEditor = document.getElementById('user-solution-editor');
+            const submitButton = document.getElementById('submit-button');
+            const feedbackText = document.getElementById('feedback-text');
+            const mainElement = document.querySelector('main');
+
+            /**
+             * Utility to normalize string for comparison
+             * (Removes extra spaces, newlines, and makes lowercase)
+             */
+            function normalizeString(str) {
+                return str.trim().replace(/\s+/g, ' ').toLowerCase();
+            }
+
+            /**
+             * Renders a new, random puzzle to the screen
+             */
+            function renderNewPuzzle() {
+                isChecking = false;
+                
+                // Pick a random puzzle
+                const puzzleIndex = Math.floor(Math.random() * puzzleBank.length);
+                currentPuzzle = puzzleBank[puzzleIndex];
+
+                // Update UI
+                languageTag.textContent = currentPuzzle.language;
+                instructions.textContent = currentPuzzle.instructions;
+                
+                // Update code block
+                brokenCodeBlock.textContent = currentPuzzle.brokenCode;
+                // Set class for highlight.js (e.g., "language-javascript")
+                brokenCodeBlock.className = `language-${currentPuzzle.language}`; 
+                
+                // Highlight the new code
+                // We check if hljs is loaded, just in case CDN fails
+                if (window.hljs) {
+                    hljs.highlightElement(brokenCodeBlock);
+                }
+
+                // Clear user editor and feedback
+                userEditor.value = '';
+                feedbackText.textContent = '';
+            }
+
+            /**
+             * Handles the user's submission
+             */
+            function handleSubmit() {
+                if (isChecking || !currentPuzzle) return;
+                isChecking = true;
+
+                const userCode = userEditor.value;
+                let isCorrect = false;
+
+                if (currentPuzzle.type === 'run') {
+                    // --- JavaScript Validation ---
+                    // The validator function will run the code safely
+                    isCorrect = currentPuzzle.validator(userCode);
+                
+                } else if (currentPuzzle.type === 'match') {
+                    // --- String Match Validation ---
+                    // Normalize both strings to be forgiving of whitespace and case
+                    const normUserCode = normalizeString(userCode);
+                    const normSolution = normalizeString(currentPuzzle.solution);
+                    isCorrect = (normUserCode === normSolution);
+                }
+
+                // --- Give Feedback ---
+                if (isCorrect) {
+                    handleSuccess();
+                } else {
+                    handleFailure();
+                }
+            }
+
+Click
+            function handleSuccess() {
+                score++;
+                scoreDisplay.textContent = score;
+                feedbackText.textContent = "Correct! 🚀";
+                feedbackText.style.color = "#4ade80"; // green-400
+                // Add flash class, remove old one if present
+                mainElement.className = mainElement.className.replace(/flash-\w+/g, '') + ' flash-correct';
+
+                // Load next puzzle after a short delay
+                setTimeout(() => {
+                    renderNewPuzzle();
+                    mainElement.className = mainElement.className.replace(' flash-correct', '');
+                }, 1500);
+            }
+
+            function handleFailure() {
+                feedbackText.textContent = "Not quite... Try again. 🤔";
+                feedbackText.style.color = "#f87171"; // red-400
+                 // Add flash class, remove old one if present
+                mainElement.className = mainElement.className.replace(/flash-\w+/g, '') + ' flash-incorrect';
+
+                // Allow user to try again
+                setTimeout(() => {
+                    isChecking = false;
+                    mainElement.className = mainElement.className.replace(' flash-incorrect', '');
+                }, 500);
+            }
+
+            // --- Initialize ---
+            // Add the event listener *inside* the onload wrapper
+            submitButton.addEventListener('click', handleSubmit);
+            
+            // Load the first puzzle
+            renderNewPuzzle(); 
+        };
+    </script>
+</body>
+</html>
+
+
+              
