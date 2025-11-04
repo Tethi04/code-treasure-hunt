@@ -12,111 +12,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
-        /* Use a dark, dev-friendly theme */
+        /* (All styles are the same as before) */
         body {
-            background-color: #1a202c; /* gray-900 */
-            color: #e2e8f0; /* gray-200 */
+            background-color: #1a202c; color: #e2e8f0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-
-        /* Style for the code editor textarea */
         #user-solution-editor {
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            background-color: #2d3748; /* gray-800 */
-            color: #e2e8f0; /* gray-200 */
-            border: 2px solid #4a5568; /* gray-600 */
-            border-radius: 8px;
-            width: 100%;
-            height: 200px;
-            padding: 10px;
-            resize: vertical;
-            outline: none;
+            font-family: 'Courier New', monospace; font-size: 0.9rem; line-height: 1.5;
+            background-color: #2d3748; color: #e2e8f0; border: 2px solid #4a5568;
+            border-radius: 8px; width: 100%; height: 200px; padding: 10px; resize: vertical; outline: none;
         }
-        #user-solution-editor:focus {
-            border-color: #4299e1; /* blue-500 */
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-        }
-
-        /* Make highlight.js code blocks match the textarea */
-        pre code.hljs {
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        /* Feedback animations */
-        @keyframes flash-green {
-            0%, 100% { background-color: transparent; }
-            50% { background-color: rgba(74, 222, 128, 0.2); } /* green-400 with opacity */
-        }
-        @keyframes flash-red {
-            0%, 100% { background-color: transparent; }
-            50% { background-color: rgba(248, 113, 113, 0.2); } /* red-400 with opacity */
-        }
-        .flash-correct {
-            animation: flash-green 0.5s ease-in-out;
-        }
-        .flash-incorrect {
-            animation: flash-red 0.5s ease-in-out;
-        }
+        #user-solution-editor:focus { border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); }
+        pre code.hljs { border-radius: 8px; padding: 10px; font-size: 0.9rem; line-height: 1.5; }
+        @keyframes flash-green { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(74, 222, 128, 0.2); } }
+        @keyframes flash-red { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(248, 113, 113, 0.2); } }
+        .flash-correct { animation: flash-green 0.5s ease-in-out; }
+        .flash-incorrect { animation: flash-red 0.5s ease-in-out; }
     </style>
-</head>
-<body class="h-full flex items-center justify-center p-4">
 
-    <main class="w-full max-w-2xl bg-gray-800 shadow-2xl rounded-2xl p-6 md:p-10 border-t-4 border-blue-500">
-
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-extrabold text-white">Endless Bug Hunt 🐞</h1>
-            <div class="text-lg text-blue-400 font-bold">
-                Bugs Squashed: <span id="score-display">0</span>
-            </div>
-        </div>
-
-        <!-- Puzzle Area -->
-        <div id="puzzle-container">
-            <!-- Language and Instructions -->
-            <div class="mb-4">
-                <span id="language-tag" class="text-sm font-bold uppercase px-3 py-1 bg-blue-600 text-white rounded-full">JavaScript</span>
-                <p id="instructions" class="text-lg text-gray-300 mt-3">This function should return the sum of 'a' and 'b'.</p>
-            </div>
-
-            <!-- Broken Code -->
-            <div class="mb-4">
-                <h3 class="font-bold text-gray-400 mb-2">Broken Code:</h3>
-                <pre><code id="broken-code-block" class="language-javascript">function add(a, b) {
-    return a - b;
-}</code></pre>
-            </div>
-
-            <!-- User Solution Editor -->
-            <div class="mb-4">
-                <h3 class="font-bold text-gray-400 mb-2">Your Fix:</h3>
-                <textarea id="user-solution-editor" spellcheck="false" placeholder="Write your corrected code here..."></textarea>
-            </div>
-
-            <!-- Submit Button and Feedback -->
-            <div class="flex flex-col items-center">
-                <button id="submit-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200">
-                    Submit Fix
-                </button>
-                <p id="feedback-text" class="text-center text-lg font-bold h-6 mt-4"></p>
-            </div>
-        </div>
-
-    </main>
-
+    <!-- *** THIS IS THE FIX *** -->
+    <!-- The entire script is now in the <head> and wrapped in 'DOMContentLoaded' -->
     <script>
-        // --- window.onload Wrapper ---
-        // This is the most reliable fix. It ensures all HTML, CSS,
-        // and libraries (like highlight.js) are fully loaded
-        // before we try to run any game code. This prevents
-        // the "button not working" bug on live servers.
-        window.onload = () => {
-
+        document.addEventListener('DOMContentLoaded', () => {
             // --- The "Never-Ending" Puzzle Bank ---
             const puzzleBank = [
                 // --- JavaScript Puzzles (Runnable) ---
@@ -127,12 +44,9 @@
                     type: 'run',
                     validator: (userCode) => {
                         try {
-                            // Create the function and test it
                             const fn = new Function(userCode + '; return add(2, 3);');
                             return fn() === 5;
-                        } catch (e) {
-                            return false;
-                        }
+                        } catch (e) { return false; }
                     }
                 },
                 {
@@ -144,9 +58,7 @@
                         try {
                             const fn = new Function(userCode + '; return getValue();');
                             return fn() === 10;
-                        } catch (e) {
-                            return false;
-                        }
+                        } catch (e) { return false; }
                     }
                 },
                 
@@ -253,6 +165,8 @@
             let isChecking = false;
 
             // --- DOM Elements ---
+            // Now we can safely find these elements because we are
+            // inside the 'DOMContentLoaded' listener.
             const scoreDisplay = document.getElementById('score-display');
             const languageTag = document.getElementById('language-tag');
             const instructions = document.getElementById('instructions');
@@ -264,7 +178,6 @@
 
             /**
              * Utility to normalize string for comparison
-             * (Removes extra spaces, newlines, and makes lowercase)
              */
             function normalizeString(str) {
                 return str.trim().replace(/\s+/g, ' ').toLowerCase();
@@ -276,26 +189,20 @@
             function renderNewPuzzle() {
                 isChecking = false;
                 
-                // Pick a random puzzle
                 const puzzleIndex = Math.floor(Math.random() * puzzleBank.length);
                 currentPuzzle = puzzleBank[puzzleIndex];
 
-                // Update UI
                 languageTag.textContent = currentPuzzle.language;
                 instructions.textContent = currentPuzzle.instructions;
                 
-                // Update code block
                 brokenCodeBlock.textContent = currentPuzzle.brokenCode;
-                // Set class for highlight.js (e.g., "language-javascript")
                 brokenCodeBlock.className = `language-${currentPuzzle.language}`; 
                 
-                // Highlight the new code
                 // We check if hljs is loaded, just in case CDN fails
                 if (window.hljs) {
                     hljs.highlightElement(brokenCodeBlock);
                 }
 
-                // Clear user editor and feedback
                 userEditor.value = '';
                 feedbackText.textContent = '';
             }
@@ -311,19 +218,13 @@
                 let isCorrect = false;
 
                 if (currentPuzzle.type === 'run') {
-                    // --- JavaScript Validation ---
-                    // The validator function will run the code safely
                     isCorrect = currentPuzzle.validator(userCode);
-                
                 } else if (currentPuzzle.type === 'match') {
-                    // --- String Match Validation ---
-                    // Normalize both strings to be forgiving of whitespace and case
                     const normUserCode = normalizeString(userCode);
                     const normSolution = normalizeString(currentPuzzle.solution);
                     isCorrect = (normUserCode === normSolution);
                 }
 
-                // --- Give Feedback ---
                 if (isCorrect) {
                     handleSuccess();
                 } else {
@@ -331,16 +232,13 @@
                 }
             }
 
-Click
             function handleSuccess() {
                 score++;
                 scoreDisplay.textContent = score;
                 feedbackText.textContent = "Correct! 🚀";
-                feedbackText.style.color = "#4ade80"; // green-400
-                // Add flash class, remove old one if present
+                feedbackText.style.color = "#4ade80";
                 mainElement.className = mainElement.className.replace(/flash-\w+/g, '') + ' flash-correct';
 
-                // Load next puzzle after a short delay
                 setTimeout(() => {
                     renderNewPuzzle();
                     mainElement.className = mainElement.className.replace(' flash-correct', '');
@@ -349,11 +247,9 @@ Click
 
             function handleFailure() {
                 feedbackText.textContent = "Not quite... Try again. 🤔";
-                feedbackText.style.color = "#f87171"; // red-400
-                 // Add flash class, remove old one if present
+                feedbackText.style.color = "#f87171";
                 mainElement.className = mainElement.className.replace(/flash-\w+/g, '') + ' flash-incorrect';
 
-                // Allow user to try again
                 setTimeout(() => {
                     isChecking = false;
                     mainElement.className = mainElement.className.replace(' flash-incorrect', '');
@@ -361,15 +257,62 @@ Click
             }
 
             // --- Initialize ---
-            // Add the event listener *inside* the onload wrapper
+            // This event listener is now guaranteed to attach
             submitButton.addEventListener('click', handleSubmit);
             
             // Load the first puzzle
             renderNewPuzzle(); 
-        };
+        });
     </script>
+</head>
+<body class="h-full flex items-center justify-center p-4">
+
+    <main class="w-full max-w-2xl bg-gray-800 shadow-2xl rounded-2xl p-6 md:p-10 border-t-4 border-blue-500">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-extrabold text-white">Endless Bug Hunt 🐞</h1>
+            <div class="text-lg text-blue-400 font-bold">
+                Bugs Squashed: <span id="score-display">0</span>
+            </div>
+        </div>
+
+        <!-- Puzzle Area -->
+        <div id="puzzle-container">
+            <!-- Language and Instructions -->
+            <div class="mb-4">
+                <span id="language-tag" class="text-sm font-bold uppercase px-3 py-1 bg-blue-600 text-white rounded-full">JavaScript</span>
+                <p id="instructions" class="text-lg text-gray-300 mt-3">This function should return the sum of 'a' and 'b'.</p>
+            </div>
+
+            <!-- Broken Code -->
+            <div class="mb-4">
+                <h3 class="font-bold text-gray-400 mb-2">Broken Code:</h3>
+                <pre><code id="broken-code-block" class="language-javascript">function add(a, b) {
+    return a - b;
+}</code></pre>
+            </div>
+
+            <!-- User Solution Editor -->
+            <div class="mb-4">
+                <h3 class="font-bold text-gray-400 mb-2">Your Fix:</h3>
+                <textarea id="user-solution-editor" spellcheck="false" placeholder="Write your corrected code here..."></textarea>
+            </div>
+
+            <!-- Submit Button and Feedback -->
+            <div class="flex flex-col items-center">
+                <button id="submit-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200">
+                    Submit Fix
+                </button>
+                <p id="feedback-text" class="text-center text-lg font-bold h-6 mt-4"></p>
+            </div>
+        </div>
+
+    </main>
+    
+    <!-- NO script tag here -->
+
 </body>
 </html>
 
 
-              
