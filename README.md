@@ -9,3 +9,4 @@ Multi-stage coding treasure hunt web app built with TypeScript, HTML, and CSS.
   
 ## Live Demo 
 https://tethi04.github.io/code-treasure-hunt/
+https://cth-demo.onrender.com
